@@ -1,10 +1,11 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, TrendingUp, AlertCircle, Activity } from 'lucide-react';
+import { LayoutDashboard, TrendingUp, AlertCircle, Activity, UserPlus } from 'lucide-react';
 
 const navItems = [
   { path: '/', label: 'Executive Overview', icon: LayoutDashboard },
   { path: '/departments', label: 'Departmental Trends', icon: TrendingUp },
   { path: '/resolution', label: 'Resolution Center', icon: AlertCircle },
+  { path: '/admissions', label: 'Admissions Portal', icon: UserPlus },
 ];
 
 const DashboardSidebar = () => {

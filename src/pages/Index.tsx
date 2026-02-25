@@ -1,10 +1,11 @@
 import { useMemo } from 'react';
 import { useHospitalData } from '@/hooks/useHospitalData';
-import { calculateALOS, calculateCMI, getWorkloadByDepartment, getRevenueByMonth, getPayerDistribution, getSeverityDistribution } from '@/lib/parseHospitalData';
+import { useRealtimeAdmissions } from '@/hooks/useRealtimeAdmissions';
+import { HospitalRecord, calculateALOS, calculateCMI, getWorkloadByDepartment, getRevenueByMonth, getPayerDistribution, getSeverityDistribution } from '@/lib/parseHospitalData';
 import DashboardLayout from '@/components/DashboardLayout';
 import MetricCard from '@/components/MetricCard';
 import EKGLoader from '@/components/EKGLoader';
-import { Activity, Clock, DollarSign, Users, Stethoscope, Heart } from 'lucide-react';
+import { Activity, Clock, DollarSign, Users, Stethoscope, Heart, Zap } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, PieChart, Pie, Cell } from 'recharts';
 
 const CHART_COLORS = [
@@ -17,20 +18,50 @@ const CHART_COLORS = [
 
 const Index = () => {
   const { data, loading } = useHospitalData();
+  const { admissions } = useRealtimeAdmissions();
+
+  // Merge CSV data with live admissions
+  const mergedData = useMemo(() => {
+    const liveRecords: HospitalRecord[] = admissions.map(a => ({
+      month: a.created_at.slice(0, 7) + '-01',
+      caseNo: a.id,
+      dob: 1990,
+      nationality: 'N/A',
+      gender: 'N/A',
+      doctorLicense: 'LIVE',
+      doctorName: a.doctor_name,
+      doctorType: 'Consultant',
+      doctorStatus: 'Active',
+      cmiValue: 1.0,
+      specialty: a.department,
+      insurancePayer: 'N/A',
+      insurancePlanName: '',
+      payerMix: 'Insurance',
+      caseType: a.case_type,
+      los: a.case_type === 'IP' ? 3 : a.case_type === 'DC' ? 1 : 0,
+      severity: a.severity,
+      surgicalMix: 'Medical',
+      dischargeTime: '',
+      dischargeBefore12PM: '',
+      revenue: 0,
+    }));
+    return [...data, ...liveRecords];
+  }, [data, admissions]);
 
   const metrics = useMemo(() => {
-    if (data.length === 0) return null;
+    if (mergedData.length === 0) return null;
     return {
-      alos: calculateALOS(data),
-      cmi: calculateCMI(data),
-      workload: getWorkloadByDepartment(data),
-      revenue: getRevenueByMonth(data),
-      totalRevenue: data.reduce((s, r) => s + r.revenue, 0),
-      totalCases: data.length,
-      payer: getPayerDistribution(data),
-      severity: getSeverityDistribution(data),
+      alos: calculateALOS(mergedData),
+      cmi: calculateCMI(mergedData),
+      workload: getWorkloadByDepartment(mergedData),
+      revenue: getRevenueByMonth(mergedData),
+      totalRevenue: mergedData.reduce((s, r) => s + r.revenue, 0),
+      totalCases: mergedData.length,
+      liveCount: admissions.length,
+      payer: getPayerDistribution(mergedData),
+      severity: getSeverityDistribution(mergedData),
     };
-  }, [data]);
+  }, [mergedData, admissions]);
 
   if (loading || !metrics) return <EKGLoader />;
 
@@ -40,7 +71,15 @@ const Index = () => {
         {/* Header */}
         <div className="animate-fade-in-up">
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Executive Overview</h1>
-          <p className="text-sm text-muted-foreground mt-1">Real-time clinical performance metrics</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Real-time clinical performance metrics
+            {metrics.liveCount > 0 && (
+              <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-[10px] font-semibold text-success">
+                <Zap className="h-3 w-3" />
+                {metrics.liveCount} live admission{metrics.liveCount > 1 ? 's' : ''}
+              </span>
+            )}
+          </p>
         </div>
 
         {/* Metrics Grid */}
@@ -148,7 +187,7 @@ const Index = () => {
             <div className="space-y-3">
               {(() => {
                 const doctorMap = new Map<string, number>();
-                data.forEach(r => doctorMap.set(r.doctorName, (doctorMap.get(r.doctorName) || 0) + 1));
+                mergedData.forEach(r => doctorMap.set(r.doctorName, (doctorMap.get(r.doctorName) || 0) + 1));
                 return Array.from(doctorMap.entries())
                   .sort((a, b) => b[1] - a[1])
                   .slice(0, 6)
