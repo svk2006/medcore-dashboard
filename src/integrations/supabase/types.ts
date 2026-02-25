@@ -14,7 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      live_admissions: {
+        Row: {
+          case_type: string
+          created_at: string
+          department: string
+          doctor_name: string
+          id: string
+          patient_name: string
+          severity: number
+        }
+        Insert: {
+          case_type?: string
+          created_at?: string
+          department: string
+          doctor_name: string
+          id?: string
+          patient_name: string
+          severity?: number
+        }
+        Update: {
+          case_type?: string
+          created_at?: string
+          department?: string
+          doctor_name?: string
+          id?: string
+          patient_name?: string
+          severity?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
