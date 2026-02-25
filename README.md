@@ -1,73 +1,136 @@
-# Welcome to your Lovable project
+This is a comprehensive and visually structured `README.md` designed to impress hackathon judges. It highlights the technical sophistication of **MedCoreOps**, its healthcare-specific logic, and the real-time capabilities you implemented.
 
-## Project info
+---
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+# 🏥 MedCoreOps
 
-## How can I edit this code?
+**The Administrative Command Center for Hospital Operational Excellence**
 
-There are several ways of editing your application.
+MedCoreOps is a high-fidelity, full-stack administrative dashboard designed to transform raw hospital data into actionable intelligence. Built for the modern healthcare facility, it bridges the gap between clinical activity and operational oversight, featuring real-time data synchronization and a refined "Clinical Dark Mode" user experience.
 
-**Use Lovable**
+---
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+## ✨ Key Features
 
-Changes made via Lovable will be committed automatically to this repo.
+### 📊 Executive Analytics (The Pulse)
 
-**Use your preferred IDE**
+A data-driven overview of the facility's performance using historical and live metrics:
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+* **Total Admissions & Bed Occupancy:** Real-time capacity tracking to prevent "boarding" in the Emergency Department. 
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
-Follow these steps:
+* **Case Mix Index (CMI):** Visualizing the complexity and resource intensity of the current patient population. 
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+* **Average Length of Stay (ALOS):** Automated tracking of patient throughput efficiency.
 
-# Step 3: Install the necessary dependencies.
-npm i
+### ⚡ Real-Time Admissions Portal
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+* **Manual Entry Engine:** A dedicated interface for staff to input new admissions instantly.
+* **Supabase Realtime Sync:** Utilizing PostgreSQL Change Data Capture (CDC) to update the executive dashboard the second a new record is saved—no page refreshes required.
+
+### 🩺 High-Fidelity Healthcare UX
+
+* **Clinical Dark Mode:** A high-contrast design system built with Tailwind CSS and shadcn/ui for reduced eye strain in clinical environments.
+* **Themed Transitions:** Custom healthcare-themed loading animations (EKG Heartbeat Pulse) for all page navigations and data-fetching states.
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+| --- | --- |
+| **Frontend** | React + Vite + TypeScript |
+| **Styling** | Tailwind CSS + shadcn/ui 
+
+ |
+| **Database** | Supabase (PostgreSQL) |
+| **Real-time** | Supabase Realtime API |
+| **Visualizations** | Recharts |
+| **Deployment** | Lovable Cloud / Netlify |
+
+---
+
+## 📈 Business Logic & KPIs
+
+MedCoreOps implements industry-standard healthcare metrics to ensure administrative accuracy:
+
+* **Average Length of Stay (ALOS):**
+
+$$ALOS = \frac{\sum_{i=1}^{n} (DischargeDate_i - AdmissionDate_i)}{n}$$
+
+
+
+where $n$ is the total number of discharges. This metric serves as a proxy for bed turnover efficiency.
+* **Staff-to-Patient Ratio:** Visualized through stacked bar charts to identify departmental bottlenecks or provider burnout risks.
+* **Resolution Trends:** Tracking Mean Time to Resolution (MTTR) for administrative support queries and backlog aging. 
+
+
+
+---
+
+## 🚀 Installation & Setup
+
+### Prerequisites
+
+* A **Supabase** account for the backend.
+* **Node.js** installed locally (if running outside the Lovable environment). 
+
+
+
+### Steps
+
+1. **Clone the Repository:**
+```bash
+git clone https://github.com/your-username/MedCoreOps.git
+cd MedCoreOps
+
 ```
 
-**Edit a file directly in GitHub**
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+2. **Install Dependencies:**
+```bash
+npm install
 
-**Use GitHub Codespaces**
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
 
-## What technologies are used for this project?
+3. **Configure Environment Variables:**
+Create a `.env` file and add your Supabase credentials:
+```env
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 
-This project is built with:
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
 
-## How can I deploy this project?
+4. **Database Migration:**
+Run the provided SQL script in your Supabase SQL Editor to generate the `admissions` and `department_stats` tables.
+5. **Run Development Server:**
+```bash
+npm run dev
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+```
 
-## Can I connect a custom domain to my Lovable project?
 
-Yes, you can!
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+---
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+## 📂 Data Sources
+
+* **Primary Dataset:** Simulated hospital operations data (2025) covering 500+ records of CMI, ALOS, and departmental volumes. 
+
+
+* **Real-time Inputs:** Live-entry simulated patient queries and admission events.
+
+---
+
+## ⚖️ License
+
+Distributed under the MIT License. See `LICENSE` for more information. 
+
+---
+
+### **Built with ❤️ using Lovable.dev**
+
+*MedCoreOps was developed in 24 hours as a demonstration of rapid full-stack healthcare application prototyping.*
