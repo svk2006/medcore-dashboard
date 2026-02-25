@@ -130,7 +130,3 @@ npm run dev
 Distributed under the MIT License. See `LICENSE` for more information. 
 
 ---
-
-### **Built with ❤️ using Lovable.dev**
-
-*MedCoreOps was developed in 24 hours as a demonstration of rapid full-stack healthcare application prototyping.*
