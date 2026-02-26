@@ -1,5 +1,24 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { z } from 'zod';
+
+const DEPARTMENTS = [
+  'Emergency', 'Cardiology', 'Orthopaedics', 'Internal Medicine',
+  'General Surgery', 'Nephrology', 'Gastroenterology', 'Pulmonology',
+  'Family Medicine', 'Obstetrics & Gynecology',
+] as const;
+
+const CASE_TYPES = ['IP', 'OP', 'DC'] as const;
+
+export const AdmissionSchema = z.object({
+  patient_name: z.string().trim().min(1, 'Patient name is required').max(100, 'Patient name too long'),
+  department: z.enum(DEPARTMENTS, { errorMap: () => ({ message: 'Invalid department' }) }),
+  severity: z.number().int().min(1).max(3),
+  doctor_name: z.string().trim().min(1, 'Doctor name is required').max(100, 'Doctor name too long'),
+  case_type: z.enum(CASE_TYPES, { errorMap: () => ({ message: 'Invalid case type' }) }),
+});
+
+export type AdmissionInput = z.infer<typeof AdmissionSchema>;
 
 export interface LiveAdmission {
   id: string;
@@ -58,9 +77,18 @@ export function useRealtimeAdmissions() {
   }, []);
 
   const addAdmission = useCallback(async (admission: Omit<LiveAdmission, 'id' | 'created_at'>) => {
+    // Validate input before database insertion
+    const parsed = AdmissionSchema.parse(admission);
+
     const { error } = await supabase
       .from('live_admissions')
-      .insert(admission);
+      .insert({
+        patient_name: parsed.patient_name,
+        department: parsed.department,
+        severity: parsed.severity,
+        doctor_name: parsed.doctor_name,
+        case_type: parsed.case_type,
+      });
 
     if (error) throw error;
   }, []);
