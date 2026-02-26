@@ -1,5 +1,3 @@
-This is a comprehensive and visually structured `README.md` designed to impress hackathon judges. It highlights the technical sophistication of **MedCoreOps**, its healthcare-specific logic, and the real-time capabilities you implemented.
-
 ---
 
 # 🏥 MedCoreOps
