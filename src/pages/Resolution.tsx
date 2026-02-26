@@ -77,7 +77,7 @@ const Resolution = () => {
     <DashboardLayout>
       <div className="space-y-6">
         <div className="animate-fade-in-up">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Resolution Center</h1>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">Resolution Center</h1>
           <p className="text-sm text-muted-foreground mt-1">Operational flags and action items</p>
         </div>
 

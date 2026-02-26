@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useHospitalData } from '@/hooks/useHospitalData';
 import { useRealtimeAdmissions } from '@/hooks/useRealtimeAdmissions';
+import { useAuth } from '@/hooks/useAuth';
 import { HospitalRecord, calculateALOS, calculateCMI, getWorkloadByDepartment, getRevenueByMonth, getPayerDistribution, getSeverityDistribution } from '@/lib/parseHospitalData';
 import DashboardLayout from '@/components/DashboardLayout';
 import MetricCard from '@/components/MetricCard';
@@ -19,8 +20,9 @@ const CHART_COLORS = [
 const Index = () => {
   const { data, loading } = useHospitalData();
   const { admissions } = useRealtimeAdmissions();
+  const { profile, isAdmin } = useAuth();
 
-  // Merge CSV data with live admissions
+  // Merge CSV data with live admissions, then filter by department
   const mergedData = useMemo(() => {
     const liveRecords: HospitalRecord[] = admissions.map(a => ({
       month: a.created_at.slice(0, 7) + '-01',
@@ -45,8 +47,15 @@ const Index = () => {
       dischargeBefore12PM: '',
       revenue: 0,
     }));
-    return [...data, ...liveRecords];
-  }, [data, admissions]);
+    let all = [...data, ...liveRecords];
+
+    // Department-based filtering
+    if (!isAdmin && profile?.department) {
+      all = all.filter(r => r.specialty === profile.department);
+    }
+
+    return all;
+  }, [data, admissions, isAdmin, profile]);
 
   const metrics = useMemo(() => {
     if (mergedData.length === 0) return null;
@@ -70,55 +79,51 @@ const Index = () => {
       <div className="space-y-6">
         {/* Header */}
         <div className="animate-fade-in-up">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Executive Overview</h1>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">Executive Overview</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Real-time clinical performance metrics
+            {!isAdmin && profile ? `${profile.department} — ` : ''}Real-time clinical performance metrics
             {metrics.liveCount > 0 && (
               <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-[10px] font-semibold text-success">
                 <Zap className="h-3 w-3" />
-                {metrics.liveCount} live admission{metrics.liveCount > 1 ? 's' : ''}
+                {metrics.liveCount} live
               </span>
             )}
           </p>
         </div>
 
         {/* Metrics Grid */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
           <MetricCard title="ALOS (Days)" value={metrics.alos.toFixed(2)} subtitle="Inpatient & Day Case" icon={Clock} delay={100} />
           <MetricCard title="Case Mix Index" value={metrics.cmi.toFixed(3)} subtitle="Avg complexity score" icon={Activity} delay={200} />
           <MetricCard title="Total Cases" value={metrics.totalCases.toLocaleString()} subtitle="All case types" icon={Users} delay={300} />
-          <MetricCard title="Total Revenue" value={`$${(metrics.totalRevenue / 1000000).toFixed(1)}M`} subtitle="Across all departments" icon={DollarSign} delay={400} />
+          <MetricCard title="Total Revenue" value={`$${(metrics.totalRevenue / 1000000).toFixed(1)}M`} subtitle="Across departments" icon={DollarSign} delay={400} />
         </div>
 
         {/* Charts Row */}
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          {/* Workload Chart */}
-          <div className="rounded-xl border border-border bg-card p-5 animate-fade-in-up" style={{ animationDelay: '500ms' }}>
+          <div className="rounded-xl border border-border bg-card p-4 sm:p-5 animate-fade-in-up" style={{ animationDelay: '500ms' }}>
             <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
               <Stethoscope className="h-4 w-4 text-primary" />
-              Workload: Doctors vs Patients by Department
+              Workload by Department
             </h3>
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={280}>
               <BarChart data={metrics.workload} margin={{ top: 5, right: 5, bottom: 60, left: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(222 25% 16%)" />
                 <XAxis dataKey="department" tick={{ fill: 'hsl(215 20% 55%)', fontSize: 10 }} angle={-45} textAnchor="end" />
                 <YAxis tick={{ fill: 'hsl(215 20% 55%)', fontSize: 11 }} />
-                <Tooltip
-                  contentStyle={{ backgroundColor: 'hsl(222 44% 9%)', border: '1px solid hsl(222 25% 16%)', borderRadius: '8px', color: 'hsl(210 40% 92%)' }}
-                />
+                <Tooltip contentStyle={{ backgroundColor: 'hsl(222 44% 9%)', border: '1px solid hsl(222 25% 16%)', borderRadius: '8px', color: 'hsl(210 40% 92%)' }} />
                 <Bar dataKey="patients" name="Patients" fill="hsl(207 90% 54%)" radius={[4, 4, 0, 0]} />
                 <Bar dataKey="doctors" name="Doctors" fill="hsl(172 66% 50%)" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
 
-          {/* Revenue Trend */}
-          <div className="rounded-xl border border-border bg-card p-5 animate-fade-in-up" style={{ animationDelay: '600ms' }}>
+          <div className="rounded-xl border border-border bg-card p-4 sm:p-5 animate-fade-in-up" style={{ animationDelay: '600ms' }}>
             <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
               <DollarSign className="h-4 w-4 text-primary" />
               Monthly Revenue Trend
             </h3>
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={280}>
               <AreaChart data={metrics.revenue} margin={{ top: 5, right: 5, bottom: 5, left: 0 }}>
                 <defs>
                   <linearGradient id="revGradient" x1="0" y1="0" x2="0" y2="1">
@@ -129,10 +134,7 @@ const Index = () => {
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(222 25% 16%)" />
                 <XAxis dataKey="month" tick={{ fill: 'hsl(215 20% 55%)', fontSize: 11 }} />
                 <YAxis tick={{ fill: 'hsl(215 20% 55%)', fontSize: 11 }} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
-                <Tooltip
-                  contentStyle={{ backgroundColor: 'hsl(222 44% 9%)', border: '1px solid hsl(222 25% 16%)', borderRadius: '8px', color: 'hsl(210 40% 92%)' }}
-                  formatter={(value: number) => [`$${value.toLocaleString()}`, 'Revenue']}
-                />
+                <Tooltip contentStyle={{ backgroundColor: 'hsl(222 44% 9%)', border: '1px solid hsl(222 25% 16%)', borderRadius: '8px', color: 'hsl(210 40% 92%)' }} formatter={(value: number) => [`$${value.toLocaleString()}`, 'Revenue']} />
                 <Area type="monotone" dataKey="revenue" stroke="hsl(207 90% 54%)" fill="url(#revGradient)" strokeWidth={2} />
               </AreaChart>
             </ResponsiveContainer>
@@ -141,8 +143,7 @@ const Index = () => {
 
         {/* Bottom Row */}
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-          {/* Payer Mix */}
-          <div className="rounded-xl border border-border bg-card p-5 animate-fade-in-up" style={{ animationDelay: '700ms' }}>
+          <div className="rounded-xl border border-border bg-card p-4 sm:p-5 animate-fade-in-up" style={{ animationDelay: '700ms' }}>
             <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
               <Heart className="h-4 w-4 text-primary" />
               Payer Mix
@@ -167,8 +168,7 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Severity Distribution */}
-          <div className="rounded-xl border border-border bg-card p-5 animate-fade-in-up" style={{ animationDelay: '800ms' }}>
+          <div className="rounded-xl border border-border bg-card p-4 sm:p-5 animate-fade-in-up" style={{ animationDelay: '800ms' }}>
             <h3 className="text-sm font-semibold text-foreground mb-4">Severity Distribution</h3>
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={metrics.severity} layout="vertical" margin={{ left: 10 }}>
@@ -181,8 +181,7 @@ const Index = () => {
             </ResponsiveContainer>
           </div>
 
-          {/* Top Doctors */}
-          <div className="rounded-xl border border-border bg-card p-5 animate-fade-in-up" style={{ animationDelay: '900ms' }}>
+          <div className="rounded-xl border border-border bg-card p-4 sm:p-5 animate-fade-in-up" style={{ animationDelay: '900ms' }}>
             <h3 className="text-sm font-semibold text-foreground mb-4">Top Doctors by Caseload</h3>
             <div className="space-y-3">
               {(() => {
@@ -196,18 +195,11 @@ const Index = () => {
                     return (
                       <div key={name} className="space-y-1">
                         <div className="flex justify-between text-xs">
-                          <span className="text-foreground font-medium">{name}</span>
-                          <span className="text-muted-foreground">{count} cases</span>
+                          <span className="text-foreground font-medium truncate mr-2">{name}</span>
+                          <span className="text-muted-foreground flex-shrink-0">{count}</span>
                         </div>
                         <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
-                          <div
-                            className="h-full rounded-full transition-all duration-700"
-                            style={{
-                              width: `${(count / max) * 100}%`,
-                              backgroundColor: CHART_COLORS[i % CHART_COLORS.length],
-                              animationDelay: `${1000 + i * 100}ms`,
-                            }}
-                          />
+                          <div className="h-full rounded-full transition-all duration-700" style={{ width: `${(count / max) * 100}%`, backgroundColor: CHART_COLORS[i % CHART_COLORS.length] }} />
                         </div>
                       </div>
                     );
