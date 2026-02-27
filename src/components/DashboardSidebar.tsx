@@ -1,10 +1,11 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, TrendingUp, AlertCircle, UserPlus, Users, Activity, LogOut, Menu } from 'lucide-react';
+import { LayoutDashboard, TrendingUp, AlertCircle, UserPlus, Users, LogOut, Menu } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
+import logo from '@/assets/medcoreops-logo.png';
 
 const navItems = [
   { path: '/dashboard', label: 'Executive Overview', icon: LayoutDashboard },
@@ -22,9 +23,7 @@ const SidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => {
     <div className="flex h-full flex-col">
       {/* Brand */}
       <div className="flex items-center gap-3 px-6 py-5 border-b border-border">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
-          <Activity className="h-5 w-5 text-primary" />
-        </div>
+        <img src={logo} alt="MedCoreOps" className="h-9 w-9 rounded-lg" />
         <div>
           <h1 className="text-base font-bold tracking-tight text-foreground">MedCoreOps</h1>
           <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">Clinical Admin</p>
@@ -96,7 +95,7 @@ const DashboardSidebar = () => {
             </SheetContent>
           </Sheet>
           <div className="flex items-center gap-2">
-            <Activity className="h-5 w-5 text-primary" />
+            <img src={logo} alt="MedCoreOps" className="h-6 w-6 rounded" />
             <span className="text-sm font-bold text-foreground">MedCoreOps</span>
           </div>
         </div>
