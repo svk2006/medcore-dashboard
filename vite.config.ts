@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => ({
     },
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
-  base: 'medcore-dashboard',
+  base: mode === "production" ? "/medcore-dashboard/" : "/",
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
