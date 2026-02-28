@@ -1,6 +1,5 @@
 GitHub Deployed Website: [![Click Here](https://img.shields.io/badge/Click%20Here-0056b3?style=for-the-badge)](https://svk2006.github.io/medcore-dashboard/)
 ---
-Lovable Website: [![Click Here](https://img.shields.io/badge/Click%20Here-0056b3?style=for-the-badge)](https://medcore-pulse-dash.lovable.app/)
 ---
 # 🏥 MedCoreOps
 
