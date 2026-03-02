@@ -10,7 +10,7 @@ export function useHospitalData() {
       setLoading(true);
       // Simulate realistic loading time
       await new Promise(resolve => setTimeout(resolve, 1800));
-      const res = await fetch('/data/hospital_data.csv');
+      const res = await fetch(`${import.meta.env.BASE_URL}data/hospital_data.csv`);
       const text = await res.text();
       setData(parseCSV(text));
       setLoading(false);
